@@ -15,6 +15,7 @@ type ComboBoxProps = {
   options: object[]
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
   valueKey: string
+  value: string
   placeholder?: string
   onSelect?: (option: object) => void
   onOptionsChange?: (option: object) => void
@@ -47,6 +48,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
   onChange,
   placeholder,
   valueKey,
+  value,
   onSelect,
   onOptionsChange,
   optionsListMaxHeight,
@@ -96,6 +98,10 @@ const ComboBox: React.FC<ComboBoxProps> = ({
     })
     setSelectedOptionIndex(-1)
   }, [])
+
+  useEffect(() => {
+    setInputValue(value)
+  }, [value])
 
   useScroll(focusIndex, dropdownRef, optionsListRef)
 
@@ -319,6 +325,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
         }}
         readOnly={!editable}
         onClick={inputClickHandler}
+        autoComplete='off'
       />
       {renderRightElement && (
         <div className={styles.rightElement}>{renderRightElement()}</div>
