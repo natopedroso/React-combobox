@@ -12,14 +12,14 @@ import styles from './index.css'
 import useScroll from './hooks/useScroll'
 
 type ComboBoxProps = {
-  options: string[]
+  options: object[]
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
-  defaultValue?: string
+  valueKey: string
   placeholder?: string
-  onSelect?: (option: string) => void
-  onOptionsChange?: (option: string) => void
+  onSelect?: (option: object) => void
+  onOptionsChange?: (option: object) => void
   optionsListMaxHeight?: number
-  renderOptions?: (option: string) => React.ReactNode
+  renderOptions?: (option: object) => React.ReactNode
   style?: React.CSSProperties
   className?: string
   inputClassName?: string
@@ -45,8 +45,8 @@ const ESCAPE_KEY = 27
 const ComboBox: React.FC<ComboBoxProps> = ({
   options: comboBoxOptions,
   onChange,
-  defaultValue,
   placeholder,
+  valueKey,
   onSelect,
   onOptionsChange,
   optionsListMaxHeight,
@@ -73,8 +73,8 @@ const ComboBox: React.FC<ComboBoxProps> = ({
   // Function that will check whether the defaultIndex falls inside the length of the options
   // or else it will return -1
 
-  const [options, setOptions] = useState<string[]>(comboBoxOptions)
-  const [inputValue, setInputValue] = useState(defaultValue || '')
+  const [options, setOptions] = useState<object[]>(comboBoxOptions)
+  const [inputValue, setInputValue] = useState('')
   const [state, dispatch] = useReducer(focusReducer, initialState)
   const { isFocus, focusIndex } = state
   const [isMouseInsideOptions, setIsMouseInsideOptions] = useState(false) // This is used to determine whether the mouse cursor is inside or outside options container
@@ -89,15 +89,13 @@ const ComboBox: React.FC<ComboBoxProps> = ({
   }, [comboBoxOptions])
 
   useEffect(() => {
-    if (!isFocus) setInputValue(defaultValue || '')
+    if (!isFocus) setInputValue('')
     dispatch({
       type: 'setFocusIndex',
-      focusIndex: defaultValue ? options.indexOf(defaultValue.toString()) : -1
+      focusIndex: -1
     })
-    setSelectedOptionIndex(
-      defaultValue ? options.indexOf(defaultValue.toString()) : -1
-    )
-  }, [defaultValue])
+    setSelectedOptionIndex(-1)
+  }, [])
 
   useScroll(focusIndex, dropdownRef, optionsListRef)
 
@@ -138,7 +136,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
 
   const updateValue = (index: number = focusIndex) => {
     if (index !== -1) {
-      setInputValue(options[index])
+      setInputValue(options[index][valueKey])
       if (onOptionsChange) onOptionsChange(options[index])
     }
   }
@@ -146,7 +144,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
   // While searching, the options are filtered and the index also changed.
   // So the focus index is set to original based on all the options.
   const resetFocusIndex = () => {
-    comboBoxOptions.forEach((option: string, index: number) => {
+    comboBoxOptions.forEach((option: object, index: number) => {
       if (option === options[focusIndex])
         dispatch({
           type: 'setFocusIndex',
@@ -244,7 +242,10 @@ const ComboBox: React.FC<ComboBoxProps> = ({
     if (filterText.length === 0) setOptions(comboBoxOptions)
     else {
       const filteredSuggestion = comboBoxOptions.filter((option) => {
-        return option.toLowerCase().indexOf(filterText.toLowerCase()) !== -1
+        return (
+          option[valueKey].toLowerCase().indexOf(filterText.toLowerCase()) !==
+          -1
+        )
       })
       setOptions(filteredSuggestion)
     }
@@ -263,7 +264,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
     })
     dispatch({
       type: 'setFocusIndex',
-      focusIndex: options.indexOf(inputValue.toString())
+      focusIndex: -1
     })
   }
 
@@ -354,7 +355,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({
                     ? `${styles.comboBoxOption} ${className}`
                     : styles.comboBoxOption
                 }
-                key={option}
+                key={index}
                 style={{
                   backgroundColor: backgroundColorSelector(index)
                 }}
