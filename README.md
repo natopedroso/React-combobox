@@ -7,7 +7,7 @@
 ## Install
 
 ```bash
-npm install --save react-responsive-combo-box
+npm install --save react-combo-box-nato
 ```
 
 ## Usage
